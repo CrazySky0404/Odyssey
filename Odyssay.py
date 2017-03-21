@@ -1,4 +1,3 @@
-
 from tkinter import *
 
 from PIL import Image, ImageTk
@@ -72,9 +71,8 @@ coin_r = list()
 coin_speed = list()
 MIN_COIN_R = 10
 MAX_COIN_R = 30
-
 MAX_COIN_SPEED = 10
-GAP = 100
+GAP = 200
 
 
 def get_coords(id_num):
@@ -88,10 +86,10 @@ def create_coin():
     x = WIDTH + GAP
     y = randint(0, HEIGHT)
     r = randint(MIN_COIN_R, MAX_COIN_R)
-    id1 = w.create_oval(x - r, y - r, x + r, y + r, outline='yellow')
+    id1 = w.create_oval(x - r, y - r, x + r, y + r, outline='#FF9900', width=10)
     coin_id.append(id1)
     coin_r.append(r)
-    coin_speed.append(randint(1, MAX_COIN_SPEED))
+    coin_speed.append(MAX_COIN_SPEED)
 
 
 def move_coin():
@@ -126,16 +124,23 @@ def distance(id1, id2):
 def collision():
     points = 0
     for coin in range(len(coin_id) - 1, -1, -1):
-        if distance(hat_id2, coin_id[coin]) < (HAT_R + coin_r[coin]):
-            points += (coin_r[coin] + coin_speed[coin])
+     if distance(hat_id2, coin_id[coin]) < (HAT_R + coin_r[coin]):
+        points += (coin_r[coin] + coin_speed[coin])
         del_coin(coin)
-        return points
+    return points
 
 
 w.create_text(50, 30, text='Время', fill="blue")
 w.create_text(150, 30, text='ВАШ СЧЕТ', fill="blue")
 time_text = w.create_text(50, 50, fill="black")
 score_text = w.create_text(150, 50, fill="black")
+
+COIN_CHANCE = 10
+TIME_LIMIT = 10
+BONUS_SCORE = 1000
+score = 0
+bonus = 0
+end = time() + TIME_LIMIT
 
 
 def show_score(score):
@@ -145,12 +150,6 @@ def show_score(score):
 def show_time(time_left):
     w.itemconfig(time_text, text=str(time_left))
 
-COIN_CHANCE = 10
-TIME_LIMIT = 10
-BONUS_SCORE = 1000
-score = 0
-bonus = 0
-end = time() + TIME_LIMIT
 
 while time() < end:
     if randint(1, COIN_CHANCE) == 1:
@@ -163,15 +162,9 @@ while time() < end:
             end += TIME_LIMIT
         show_score(score)
         show_time(int(end - time()))
-        # print(score)
+        print(score)
         top.update()
         sleep(0.01)
-
-
-def distance(id1, id2):
-    x1, y1 = get_coords(id1)
-    x2, y2 = get_coords(id2)
-    return sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 
 
 w.create_text(MID_X, MID_Y, text="Игра окончена", fil="blue", font=('Helvetica', 30))
