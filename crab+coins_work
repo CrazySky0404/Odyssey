@@ -1,0 +1,82 @@
+import pygame
+import random
+
+# Initialize the game engine
+pygame.init()
+
+# pygame.mixer.music.load("img/music2.mp3")
+# pygame.mixer.music.play(-1)
+
+WIDTH = 1000
+HEIGHT = 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("ODYSSEY")
+background_image = pygame.image.load("img/fon.jpg").convert()
+screen.blit(background_image, (0, 0))
+SIZE = [600, 1000]
+
+FPS = 30
+fpsClock = pygame.time.Clock()
+crab = pygame.image.load('img/crab.gif')
+crabx = WIDTH/2
+craby = HEIGHT/2
+pygame.key.set_repeat(10, 10)
+pygame.mouse.set_visible(0)
+
+snow_list = []
+
+
+for i in range(40):
+    x = random.randrange(0, 1000)
+    y = random.randrange(0, 600)
+    snow_list.append([x, y])
+
+clock = pygame.time.Clock()
+
+done = False
+while not done:
+
+    screen.blit(background_image, (0, 0))
+
+    for event in pygame.event.get():
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP:
+                craby -= 10
+            if event.key == pygame.K_DOWN:
+                craby += 10
+            if event.key == pygame.K_RIGHT:
+                crabx += 10
+            if event.key == pygame.K_LEFT:
+                crabx -= 10
+    # for event in pygame.event.get():  # User did something
+        if event.type == pygame.QUIT:
+            done = True  # Flag that we are done so we exit this loop
+
+    screen.blit(crab, (crabx, craby))
+
+    for i in range(len(snow_list)):
+
+        sun = pygame.image.load("img/coin10.png")
+        screen.blit(sun,  snow_list[i])
+        # Move the snow flake left 3 pixels
+        snow_list[i][0] -= 3
+
+        # If the snow flake has moved off the left of the screen
+        if snow_list[i][0] < -40:
+            # Reset it just above the top
+            # y = random.randrange(-50, -10)
+            y = random.randrange(0, 600)
+            snow_list[i][1] = y
+            # Give it a new x position
+            x = random.randrange(1010, 1050)
+            snow_list[i][0] = x
+
+            # Go ahead and update the screen with what we've drawn.
+
+    pygame.display.update()
+    fpsClock.tick(FPS)
+    pygame.display.flip()
+    clock.tick(20)
+
+pygame.quit()
