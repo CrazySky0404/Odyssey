@@ -1,0 +1,113 @@
+import pygame, sys, random
+import time
+
+pygame.init()
+
+SCREEN_WIDTH = 1000
+SCREEN_HEIGHT = 600
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption("ODYSSEY")
+background_image = pygame.image.load("img/fon.jpg").convert()
+screen.blit(background_image, (0, 0))
+
+COIN_COUNT = 50
+COIN_WIDTH = 10
+crabx = SCREEN_WIDTH/2
+craby = SCREEN_HEIGHT/2
+
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+clock = pygame.time.Clock()
+font = pygame.font.Font('img/HelveticaRegular.ttf', 36)
+game_over = False
+FPS = 30
+frame_count = 0
+frame_rate = 60
+start_time = 30
+
+#pygame.mixer.music.load("img/music2.mp3")
+#pygame.mixer.music.play(-1)
+
+sun = pygame.image.load("img/coin10.png")
+crab = pygame.image.load('img/crab.gif')
+
+
+class Crab (pygame.sprite.Sprite):
+    def __init__(self, image, pos):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.radius = 10
+
+
+class Coins (pygame.sprite.Sprite):
+    def __init__(self, image, pos):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.topleft = pos
+
+    def update(self):
+        self.rect.x -= 5
+        #if (self.rect.x > SCREEN_WIDTH):
+           # self.rect.x = -1
+        if self.rect.x < -100:
+            y = random.randrange(0, 600)
+            self.rect.y = y
+            x = random.randrange(1010, 1050)
+            self.rect.x = x
+
+pygame.mouse.set_visible(False)
+just_coins = pygame.sprite.Group()
+all_sprites = pygame.sprite.Group()
+
+for i in range(COIN_COUNT):
+    x = random.randrange(0, 1000)
+    y = random.randrange(0, 600)
+    tmpcoin = Coins(sun, [x, y])
+    just_coins.add(tmpcoin)
+    all_sprites.add(tmpcoin)
+
+
+player = Crab(crab, [0, 0])
+all_sprites.add(player)
+
+while True:
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        if event.type == pygame.MOUSEMOTION:
+            player.rect.topleft = pygame.mouse.get_pos()
+
+    just_coins.update()
+    hits = pygame.sprite.spritecollide(player, just_coins, True)
+
+    screen.blit(background_image, (0, 0))
+
+    # --- Timer going down ---
+    total_seconds = start_time - (frame_count // frame_rate)
+    if total_seconds < 0:
+        total_seconds = 0
+        game_over = True
+
+    minutes = total_seconds // 60
+    seconds = total_seconds % 60
+    output_string = "Time left: {0:02}:{1:02}".format(minutes, seconds)
+    text = font.render(output_string, True, BLACK)
+    screen.blit(text, [250, 280])
+    frame_count += 1
+    clock.tick(frame_rate)
+
+    if game_over:
+        text = font.render("Game Over", True, WHITE)
+        text_rect = text.get_rect()
+        text_x = screen.get_width() / 2 - text_rect.width / 2
+        text_y = screen.get_height() / 2 - text_rect.height / 2
+        screen.blit(text, [text_x, text_y])
+
+    all_sprites.draw(screen)
+    pygame.display.flip()
+    pygame.display.update()
+    # clock.tick(20)
