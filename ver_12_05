@@ -1,0 +1,205 @@
+import pygame, sys, random
+import time
+
+__author__ = "Mary Lukash"
+__version__ = "1.0.1"
+__maintainer__ = "ODYSSEY"
+__email__ = "lypsi@ukr.net"
+
+pygame.init()
+
+SCREEN_WIDTH = 1000
+SCREEN_HEIGHT = 600
+
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption("ODYSSEY")
+
+background_image3 = pygame.image.load("img/fon_start.jpg").convert()
+
+background_image = pygame.image.load("img/fon.jpg").convert()
+screen.blit(background_image, (0, 0))
+
+COIN_COUNT = 50
+COIN_WIDTH = 10
+BOMBS_COUNT = 5
+
+WHITE = (255, 255, 255)
+clock = pygame.time.Clock()
+game_over = False
+FPS = 30
+frame_count = 0
+frame_rate = 60
+start_time = 32
+
+#pygame.mixer.music.load("img/music2.mp3")
+#pygame.mixer.music.play(-1)
+
+sun = pygame.image.load("img/coin10.png")
+bomba = pygame.image.load("img/bomba.png")
+#crab = pygame.image.load('img/crab.gif')
+
+
+class Crab (pygame.sprite.Sprite):
+
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load('img/crab.gif')
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.x_speed = 0
+        self.y_speed = 0
+
+    def right(self):
+        self.x_speed += 5
+        self.rect.x += self.x_speed
+        if self.rect.x > 850:
+            self.rect.x = SCREEN_WIDTH - 150
+
+    def left(self):
+        self.x_speed += 5
+        self.rect.x -= self.x_speed
+        if self.rect.x < -10:
+            self.rect.x = 0
+
+    def up(self):
+        self.y_speed += 5
+        self.rect.y -= self.y_speed
+        if self.rect.y < -20:
+            self.rect.y = -20
+
+    def down(self):
+        self.y_speed += 5
+        self.rect.y += self.y_speed
+        if self.rect.y > 490:
+           self.rect.y = SCREEN_HEIGHT-110
+
+
+class Coins (pygame.sprite.Sprite):
+    def __init__(self, image, pos):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.topleft = pos
+
+    def update(self):
+        self.rect.x -= 4
+        if self.rect.x < -100:
+            y = random.randrange(0, 600)
+            self.rect.y = y
+            x = random.randrange(1010, 1050)
+            self.rect.x = x
+
+
+class Bomba (pygame.sprite.Sprite):
+    def __init__(self, image, pos):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.topleft = pos
+
+    def update(self):
+        self.rect.x -= 3
+        if self.rect.x < -100:
+            y = random.randrange(0, 600)
+            self.rect.y = y
+            x = random.randrange(1010, 1050)
+            self.rect.x = x
+
+pygame.mouse.set_visible(False)
+just_coins = pygame.sprite.Group()
+just_bombs = pygame.sprite.Group()
+only_crab = pygame.sprite.Group()
+
+for i in range(BOMBS_COUNT):
+    x = random.randrange(0, 1000)
+    y = random.randrange(0, 600)
+    tmpcoin2 = Bomba(bomba, [x, y])
+    just_bombs.add(tmpcoin2)
+
+for i in range(COIN_COUNT):
+    x = random.randrange(0, 1000)
+    y = random.randrange(0, 600)
+    tmpcoin = Coins(sun, [x, y])
+    just_coins.add(tmpcoin)
+
+x_coord = 200
+y_coord = 200
+player = Crab(x_coord, y_coord)
+only_crab.add(player)
+score = 0
+
+
+done = False
+while not done:
+    total_seconds = start_time - (frame_count // frame_rate)
+
+    if total_seconds >= 30:
+        screen.blit(background_image3, (0, 0))
+    else:
+        screen.blit(background_image, (0, 0))
+
+    for e in pygame.event.get():
+        if e.type == pygame.QUIT:
+            raise SystemExit('QUIT')
+
+        if e.type == pygame.KEYDOWN and e.key == pygame.K_UP:
+            player.up()
+        if e.type == pygame.KEYDOWN and e.key == pygame.K_LEFT:
+            player.left()
+        if e.type == pygame.KEYDOWN and e.key == pygame.K_RIGHT:
+            player.right()
+        if e.type == pygame.KEYDOWN and e.key == pygame.K_DOWN:
+            player.down()
+
+    hits = pygame.sprite.spritecollide(player, just_coins, True)
+    for hit in hits:
+        if game_over == False:
+            score += 20
+
+    hits = pygame.sprite.spritecollide(player, just_bombs, True)
+    for hit in hits:
+        if game_over == False:
+            score -= 100
+
+    just_bombs.update()
+    just_coins.update()
+
+    if total_seconds < 0:
+        total_seconds = 0
+        game_over = True
+
+
+    minutes = total_seconds // 60
+    seconds = total_seconds % 60
+    output_string = "Time left: {0:02}:{1:02}".format(minutes, seconds)
+    font = pygame.font.Font('img/HelveticaRegular.ttf', 24)
+    text = font.render(output_string, True, (5, 114, 119))
+    screen.blit(text, [30, 30])
+    frame_count += 1
+    clock.tick(frame_rate)
+
+    just_coins.draw(screen)
+    just_bombs.draw(screen)
+    only_crab.draw(screen)
+
+    text4 = font.render("Score: " + str(score), True, (5, 114, 119))
+    screen.blit(text4, [250, 30])
+
+    if game_over:
+        background_image2 = pygame.image.load("img/fon2.jpg").convert()
+        screen.blit(background_image2, (0, 0))
+        font1 = pygame.font.Font('img/HelveticaRegular.ttf', 36)
+        font2 = pygame.font.Font('img/HelveticaRegular.ttf', 30)
+        text = font1.render("Game Over", True, WHITE)
+        text2 = font2.render("Your score: " + str(score), True, (115, 234, 254))
+        text3 = font2.render("Thanks for the game!", True, (115, 234, 254))
+        text_rect = text.get_rect()
+        screen.blit(text, [500, 260])
+        text2_rect = text2.get_rect()
+        screen.blit(text2, [500, 310])
+        text3_rect = text3.get_rect()
+        screen.blit(text3, [500, 360])
+
+    pygame.display.flip()
+    pygame.display.update()
