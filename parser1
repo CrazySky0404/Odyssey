@@ -1,0 +1,60 @@
+import urllib3.request
+import csv
+from bs4 import BeautifulSoup
+from urllib.request import Request, urlopen
+
+
+def get_html(url):
+    # response = urllib3.request.urlopen(url)
+    response = urlopen(url)
+    return response.read()
+
+
+def parse(html):
+    soup = BeautifulSoup(html)
+    table = soup.find('div', class_='category-products')
+
+    projects = []
+
+    for row in table.find_all('li'):
+        cols = row.find_all('h2')
+        proba = row.find_all('div')
+
+        projects.append({
+            'title': cols[0].a.text,
+            'cods': proba[1].text.strip(),
+            'brand': proba[0].text.strip(),
+            'price': proba[2].text.strip()
+        })
+
+    return projects
+    #print(projects)
+    #for project in projects:
+       #print(project)
+
+
+def save(projects, path):
+    with open(path, 'w') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(('Цена', 'Наименование', 'Артикул', 'Бренд'))
+
+
+        for project in projects:
+            writer.writerow((project['price'], ', '.join(project['title']), project['cods'], project['brand']))
+
+
+
+def main():
+
+    projects = []
+    projects.extend(parse(get_html('https://ilovemommy.com.ua/ru/odezhda-dlya-devochek/'
+                   '2-5-years/chelovechki.html')))
+
+    save(projects, "projects.csv")
+
+    #for project in projects:
+    #print(projects)
+
+
+if __name__ == '__main__':
+    main()
